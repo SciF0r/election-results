@@ -9,12 +9,11 @@ import csv
 import io
 import urllib.request as req
 import re
-import string
 
 URL = {
-    'base': 'http://www.wahlarchiv.sites.be.ch/wahlen2011/target/',
-    'overview': 'GemeindenUebersichtAction.do@method=read&sprache=d.html',
-    'csv': 'pdfs/waehleranteileGemeinde{}.csv',
+    'base'     : 'http://www.wahlarchiv.sites.be.ch/wahlen2011/target/',
+    'overview' : 'GemeindenUebersichtAction.do@method=read&sprache=d.html',
+    'csv'      : 'pdfs/waehleranteileGemeinde{}.csv',
 }
 COMMUNE_PATTERN = re.compile(r'.*gem=(\d{3}).html')
 LIST_NAME = 'PIRATEN / PIRATES'
@@ -51,6 +50,76 @@ class Commune(object):
         self.additional_votes = 0
         self.list_votes       = 0
         self.candidates       = []
+        self._in_header       = True
+        self._in_party        = False
+
+    def read_header_row(self, row):
+        """Handles a row in header context"""
+        if len(row) == 4 and row[1] == LIST_NAME:
+            self.absolute_votes = get_csv_int(row[2])
+            self.relative_votes = get_csv_float(row[3])
+        if len(row) == 2:
+            if row[0] == STR['entitled']:
+                self.entitled = get_csv_int(row[1])
+            if row[0] == STR['voted']:
+                self.voted = get_csv_int(row[1])
+            if row[0] == STR['empty']:
+                self.empty = get_csv_int(row[1])
+            if row[0] == STR['invalid']:
+                self.invalid = get_csv_int(row[1])
+            if row[0] == STR['valid']:
+                self.valid = get_csv_int(row[1])
+            if row[0] == STR['turnout']:
+                self.turnout = get_csv_float(row[1])
+                self._in_header = False
+
+    def read_party_row(self, row):
+        """Handles a row in party context"""
+        if row[0] == STR['direct_votes']:
+            self.direct_votes = get_csv_int(row[1])
+        elif row[0] == STR['additional_votes']:
+            self.additional_votes = get_csv_int(row[1])
+        elif row[0] == STR['list_votes']:
+            self.list_votes = get_csv_int(row[1])
+        elif len(row) == 9:
+            try:
+                self.candidates.append({
+                    'last_name': row[1].strip(),
+                    'first_name': row[2].strip(),
+                    'votes': get_csv_int(row[6]),
+                })
+            except ValueError:
+                pass
+
+    def fill(self):
+        """Fills Commune object with the results"""
+        match = COMMUNE_PATTERN.search(self.path)
+        if not match:
+            print('No commune id found for {}'.format(self.name))
+            return
+        csv_link = '{}{}'.format(
+            URL['base'],
+            URL['csv'].format(match.group(1))
+        )
+        csv_data = req.urlopen(csv_link).read().decode('latin1', 'ignore')
+        csv_reader = csv.reader(io.StringIO(csv_data), delimiter=';')
+        for row in csv_reader:
+            if self._in_header:
+                self.read_header_row(row)
+            else:
+                if not self._in_party:
+                    if row[0] == STR['short'] and row[1] == LIST_NAME:
+                        self._in_party = True
+                    continue
+                self.read_party_row(row)
+                if row[0] == 'Liste':
+                    break
+
+        print('Votes: {} ({}%)\n{}'.format(
+            self.absolute_votes,
+            self.relative_votes,
+            self.candidates
+        ))
 
 
 def get_html(url):
@@ -69,7 +138,7 @@ def get_results():
             commune.attrs['href'].strip(),
         )
         print('Parsing {}...'.format(commune_object.name))
-        fill_commune(commune_object)
+        commune_object.fill()
 
 
 def get_csv_int(str_):
@@ -82,67 +151,6 @@ def get_csv_float(str_):
     return float(str_.strip().replace('\'', '').replace('%', ''))
 
 
-def fill_commune(commune):
-    """Fills a given Commune object with the results"""
-    match = COMMUNE_PATTERN.search(commune.path)
-    if not match:
-        print('No commune id found for {}'.format(commune.name))
-        return
-    csv_link = '{}{}'.format(
-        URL['base'],
-        URL['csv'].format(match.group(1))
-    )
-    csv_data = req.urlopen(csv_link).read().decode('latin1', 'ignore')
-    csv_reader = csv.reader(io.StringIO(csv_data), delimiter=';')
-    in_header = True
-    in_party = False
-    for row in csv_reader:
-        if in_header:
-            if len(row) == 4 and row[1] == LIST_NAME:
-                commune.absolute_votes = get_csv_int(row[2])
-                commune.relative_votes = get_csv_float(row[3])
-            if len(row) == 2:
-                if row[0] == STR['entitled']:
-                    commune.entitled = get_csv_int(row[1])
-                if row[0] == STR['voted']:
-                    commune.voted = get_csv_int(row[1])
-                if row[0] == STR['empty']:
-                    commune.empty = get_csv_int(row[1])
-                if row[0] == STR['invalid']:
-                    commune.invalid = get_csv_int(row[1])
-                if row[0] == STR['valid']:
-                    commune.valid = get_csv_int(row[1])
-                if row[0] == STR['turnout']:
-                    commune.turnout = get_csv_float(row[1])
-                    in_header = False
-        else:
-            if not in_party:
-                if row[0] == STR['short'] and row[1] == LIST_NAME:
-                    in_party = True
-                continue
-            if row[0] == STR['direct_votes']:
-                commune.direct_votes = get_csv_int(row[1])
-            elif row[0] == STR['additional_votes']:
-                commune.additional_votes = get_csv_int(row[1])
-            elif row[0] == STR['list_votes']:
-                commune.list_votes = get_csv_int(row[1])
-            elif len(row) == 9:
-                try:
-                    commune.candidates.append({
-                        'last_name': row[1].strip(),
-                        'first_name': row[2].strip(),
-                        'votes': get_csv_int(row[6]),
-                    })
-                except ValueError:
-                    pass
-            if row[0] == 'Liste':
-                break
-
-    print('Votes: {} ({}%)\n{}'.format(
-        commune.absolute_votes,
-        commune.relative_votes,
-        commune.candidates
-    ))
 
 
 get_results()
