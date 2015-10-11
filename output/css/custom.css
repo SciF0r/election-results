@@ -1,0 +1,10 @@
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Raleway'), url(../font/raleway.woff2) format('woff2');
+}
+
+html {
+  margin: 50px;
+}

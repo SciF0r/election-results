@@ -33,6 +33,8 @@ STR = {
     'list_votes'       : 'Parteistimmen / Total des suffrages de parti',
 }
 
+election_results = {}
+
 
 class Commune(object):
     """Holds the results for a commune"""
@@ -82,13 +84,21 @@ class Commune(object):
             self.additional_votes = get_csv_int(row[1])
         elif row[0] == STR['list_votes']:
             self.list_votes = get_csv_int(row[1])
-        elif len(row) == 9:
+        elif len(row) == 9 and row[1] != 'Name' and row[1] != 'Nom':
             try:
+                first_name = row[1].strip()
+                last_name  = row[2].strip()
+                votes      = get_csv_int(row[6])
                 self.candidates.append({
-                    'last_name': row[1].strip(),
-                    'first_name': row[2].strip(),
-                    'votes': get_csv_int(row[6]),
+                    'last_name': first_name,
+                    'first_name': last_name,
+                    'votes': votes,
                 })
+                if first_name in election_results:
+                    old_votes = election_results[first_name]
+                    election_results[first_name] = old_votes + votes
+                else:
+                    election_results[first_name] = votes
             except ValueError:
                 pass
 
@@ -147,11 +157,19 @@ def get_results():
 
 def write_results_html(communes):
     """Write the results into an html file"""
+    candidates = sorted(
+        election_results.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader('templates')
     )
     template = env.get_template('results.html')
-    template.stream(communes=communes).dump('output/results.html')
+    template.stream(
+        communes=communes,
+        candidates=candidates
+    ).dump('output/results.html')
 
 
 def get_csv_int(str_):

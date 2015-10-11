@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <title>Aktuelle Resultate für die Piratenpartei Kanton Bern</title>
+    <meta name="author" content="Denis Simonet">
+    <meta name="viewport" content="width=devide-width, inital-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <script src="js/Chart.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="column" style="margin-top: 10%">
+          <h2>Aktuelle Wahlresultate (alle 10 Minuten)</h2>
+          <p>Live mitverfolgen, die die Piraten bei den Nationalratswahlen 2015 abgeschneiden.</p>
+        </div>
+        <div class="column" style="margin-top: 50px">
+          <canvas id="candidates" class="u-full-width"></canvas>
+        </div>
+      </div>
+      <div class="row">
+      </div>
+    </div>
+    <table class="u-full-width">
+      <thead>
+        <tr>
+          <th>Gemeinde</th>
+          <th>Wahlberechtigte</th>
+          <th>Stimmzettel</th>
+          <th>Leer</th>
+          <th>Ungültig</th>
+          <th>Gültig</th>
+          <th>Wahlbeteiligung</th>
+          <th>Kandidatenstimmen</th>
+          <th>Zusatzstimmen</th>
+          <th>Parteistimmen</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for commune in communes %}
+      <tr>
+        <td>{{ commune.name }}</td>
+        <td>{{ commune.entitled }}</td>
+        <td>{{ commune.voted }}</td>
+        <td>{{ commune.empty }}</td>
+        <td>{{ commune.invalid }}</td>
+        <td>{{ commune.valid }}</td>
+        <td>{{ commune.turnout}}%</td>
+        <td>{{ commune.direct_votes }}</td>
+        <td>{{ commune.additional_votes }}</td>
+        <td>{{ commune.absolute_votes }} ({{ commune.relative_votes }}%)</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <script>
+      var ctx = document.getElementById('candidates').getContext('2d')
+      var data = {
+        labels: [
+        {% for candidate in candidates %}
+          '{{ candidate[0] }}',
+        {% endfor %}
+        ],
+        datasets: [
+          {
+            label: 'Direct votes',
+            fillColor: 'rgba(195, 104, 0, 0.5)',
+            strokeColor: 'rgba(195, 104, 0, 0.8)',
+            highlightFill: 'rgba(195, 104, 0, 0.75)',
+            highlightStroke: 'rgba(195, 104, 0, 1)',
+            data: [
+            {% for candidate in candidates %}
+              {{ candidate[1] }},
+            {% endfor %}
+            ],
+          },
+        ],
+      }
+      var options = {
+      }
+      var candidates_chart = new Chart(ctx).Bar(data, options)
+    </script>
+  </body>
+</html>
