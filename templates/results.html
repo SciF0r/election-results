@@ -13,9 +13,11 @@
   <body>
     <div class="container">
       <div class="row">
-        <div class="column" style="margin-top: 10%">
-          <h2>Aktuelle Wahlresultate (alle 10 Minuten)</h2>
-          <p>Live mitverfolgen, die die Piraten bei den Nationalratswahlen 2015 abgeschneiden.</p>
+        <div class="column">
+          <h3>Aktuelle Wahlresultate (alle 10 Minuten)</h3>
+          <p>Live mitverfolgen, wie die Berner Piraten bei den Nationalratswahlen 2015 abschneiden.</p>
+          <p>Stimmen gesamt: {{ votes_all }}</p>
+          <p>Stimmen für die Piraten: <b>{{ votes_pirates }} ({{ votes_pirates_relative }}%)</b></p>
         </div>
         <div class="column" style="margin-top: 50px">
           <canvas id="candidates" class="u-full-width"></canvas>

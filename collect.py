@@ -34,7 +34,8 @@ STR = {
 }
 
 election_results = {}
-
+votes_all = 0
+votes_pirates = 0
 
 class Commune(object):
     """Holds the results for a commune"""
@@ -58,9 +59,14 @@ class Commune(object):
 
     def read_header_row(self, row):
         """Handles a row in header context"""
+        global votes_all
+        global votes_pirates
         if len(row) == 4 and row[1] == LIST_NAME:
-            self.absolute_votes = get_csv_int(row[2])
-            self.relative_votes = get_csv_float(row[3])
+            absolute_votes = get_csv_int(row[2])
+            relative_votes = get_csv_float(row[3])
+            self.absolute_votes = absolute_votes
+            self.relative_votes = relative_votes
+            votes_pirates = votes_pirates + absolute_votes
         if len(row) == 2:
             if row[0] == STR['entitled']:
                 self.entitled = get_csv_int(row[1])
@@ -71,7 +77,9 @@ class Commune(object):
             if row[0] == STR['invalid']:
                 self.invalid = get_csv_int(row[1])
             if row[0] == STR['valid']:
-                self.valid = get_csv_int(row[1])
+                valid_votes = get_csv_int(row[1])
+                self.valid = valid_votes
+                votes_all = votes_all + valid_votes
             if row[0] == STR['turnout']:
                 self.turnout = get_csv_float(row[1])
                 self._in_header = False
@@ -162,13 +170,17 @@ def write_results_html(communes):
         key=lambda x: x[1],
         reverse=True
     )
+    votes_pirates_relative = 100 * votes_pirates / votes_all
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader('templates')
     )
     template = env.get_template('results.html')
     template.stream(
         communes=communes,
-        candidates=candidates
+        candidates=candidates,
+        votes_all=votes_all,
+        votes_pirates=votes_pirates,
+        votes_pirates_relative=votes_pirates_relative
     ).dump('output/results.html')
 
 
