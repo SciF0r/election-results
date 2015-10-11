@@ -7,7 +7,9 @@
 import bs4
 import csv
 import io
+import jinja2
 import urllib.request as req
+import urllib.error   as url_error
 import re
 
 URL = {
@@ -48,7 +50,6 @@ class Commune(object):
         self.turnout          = 0.0
         self.direct_votes     = 0
         self.additional_votes = 0
-        self.list_votes       = 0
         self.candidates       = []
         self._in_header       = True
         self._in_party        = False
@@ -101,7 +102,12 @@ class Commune(object):
             URL['base'],
             URL['csv'].format(match.group(1))
         )
-        csv_data = req.urlopen(csv_link).read().decode('latin1', 'ignore')
+
+        try:
+            csv_data = req.urlopen(csv_link).read().decode('latin1', 'ignore')
+        except url_error.HTTPError as e:
+            print('Could not open CSV file for {}: {}'.format(self.name, e))
+            return
         csv_reader = csv.reader(io.StringIO(csv_data), delimiter=';')
         for row in csv_reader:
             if self._in_header:
@@ -115,12 +121,6 @@ class Commune(object):
                 if row[0] == 'Liste':
                     break
 
-        print('Votes: {} ({}%)\n{}'.format(
-            self.absolute_votes,
-            self.relative_votes,
-            self.candidates
-        ))
-
 
 def get_html(url):
     """Returns a BeautifulSoup object of the given url"""
@@ -130,15 +130,28 @@ def get_html(url):
 
 def get_results():
     """Returns all the (temporary) results as an object"""
+    print('Getting results...')
     html = get_html('{}{}'.format(URL['base'], URL['overview']))
     commune_list = html.findAll('a', {'href': COMMUNE_PATTERN})
+    commune_results = []
     for commune in commune_list:
         commune_object = Commune(
             commune.get_text().strip(),
             commune.attrs['href'].strip(),
         )
-        print('Parsing {}...'.format(commune_object.name))
+        print('.'.format(commune_object.name), end='', flush=True)
         commune_object.fill()
+        commune_results.append(commune_object)
+    return commune_results
+
+
+def write_results_html(communes):
+    """Write the results into an html file"""
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader('templates')
+    )
+    template = env.get_template('results.html')
+    template.stream(communes=communes).dump('output/results.html')
 
 
 def get_csv_int(str_):
@@ -151,6 +164,5 @@ def get_csv_float(str_):
     return float(str_.strip().replace('\'', '').replace('%', ''))
 
 
-
-
-get_results()
+results = get_results()
+write_results_html(results)
