@@ -34,10 +34,10 @@ STR = {
     'list'             : 'Liste',
 }
 
-election_results = {
+vote_results = {
     'all_votes': 0,
-    'list_votes': {},
 }
+list_results = {}
 candidate_results = {}
 
 
@@ -66,7 +66,7 @@ class Commune(object):
         self.invalid          = 0
         self.valid            = 0
         self.turnout          = 0.0
-        self.lists            = []
+        self.lists            = {}
         self._in_header       = True
         self._current_list    = None
 
@@ -85,8 +85,8 @@ class Commune(object):
             self.valid = valid_votes
         elif row[0] == STR['all_votes']:
             self.all_votes = get_csv_int(row[2])
-            global election_results
-            election_results['all_votes'] += self.all_votes
+            global vote_results
+            vote_results['all_votes'] += self.all_votes
         elif row[0] == STR['turnout']:
             self.turnout = get_csv_float(row[1])
             self._in_header = False
@@ -97,7 +97,7 @@ class Commune(object):
             list_number = get_csv_int(row[1])
             list_name   = row[2]
             self._current_list = List(list_number, list_name)
-            self.lists.append(self._current_list)
+            self.lists[list_number] = self._current_list
         elif row[0] == STR['direct_votes']:
             self._current_list.direct_votes = get_csv_int(row[1])
         elif row[0] == STR['additional_votes']:
@@ -105,11 +105,11 @@ class Commune(object):
         elif row[0] == STR['list_votes']:
             list_votes = get_csv_int(row[1])
             self._current_list.list_votes = list_votes
-            global election_results
+            global list_results
             list_number = self._current_list.number
-            if list_number not in election_results['list_votes']:
-                election_results['list_votes'][list_number] = 0
-            election_results['list_votes'][list_number] += list_votes
+            if list_number not in list_results.keys():
+                list_results[list_number] = 0
+            list_results[list_number] += list_votes
         elif len(row) == 9 and row[1] != 'Name' and row[1] != 'Nom':
             try:
                 first_name = row[1]
@@ -118,6 +118,15 @@ class Commune(object):
                 self._add_candidate(first_name, last_name, votes)
             except ValueError:
                 pass
+
+    def get_list(self, number):
+        try:
+            return self.lists[number]
+        except KeyError:
+            print('Could not get list {} for commune {}'.format(
+                number,
+                self.name
+            ))
 
     def _add_candidate(self, first_name, last_name, votes):
         global candidate_results
@@ -148,8 +157,9 @@ class Commune(object):
         try:
             csv_data = req.urlopen(csv_link).read().decode('latin1', 'ignore')
         except url_error.HTTPError as e:
-            print('Could not open CSV file for {}: {}'.format(self.name, e))
-            return
+            raise RuntimeError(
+                'Could not open CSV file for {}: {}'.format(self.name, e)
+            )
         csv_reader = csv.reader(io.StringIO(csv_data), delimiter=';')
         for row in csv_reader:
             if self._in_header:
@@ -176,8 +186,11 @@ class Election(object):
                 commune.attrs['href'].strip(),
             )
             print('.', end='', flush=True)
-            commune_object.fill()
-            self.communes.append(commune_object)
+            try:
+                commune_object.fill()
+                self.communes.append(commune_object)
+            except RuntimeError as e:
+                print(e)
 
     def candidates_sorted(self, list_number):
         list_ = candidate_results[list_number]
@@ -188,10 +201,10 @@ class Election(object):
         )
 
     def list_results(self, list_number):
-        list_votes = election_results['list_votes'][list_number]
+        list_votes = list_results[list_number]
         return {
             'absolute': list_votes,
-            'relative': 100 * list_votes / election_results['all_votes']
+            'relative': round(100 * list_votes / vote_results['all_votes'], 2)
         }
 
 
@@ -207,12 +220,12 @@ def write_results_html(election):
         loader=jinja2.FileSystemLoader('templates')
     )
     template = env.get_template('results.html')
-    for list_number in election_results['list_votes'].keys():
+    for list_number in list_results.keys():
         template.stream(
             communes=election.communes,
             candidates=election.candidates_sorted(list_number),
-            results=election.list_results(list_number),
-            all_votes=election_results['all_votes'],
+            list_results=election.list_results(list_number),
+            vote_results=vote_results,
             list_number=list_number
         ).dump('output/{}.html'.format(list_number))
 

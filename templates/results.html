@@ -31,7 +31,7 @@
                   Stimmen Liste:
                 </th>
                 <td>
-                  {{ results['absolute'] }} ({{ results['relative'] }}%)
+                  {{ '{:,}'.format(list_results['absolute']) }} ({{ list_results['relative'] }}%)
                 </td>
               </tr>
             </tbody>
@@ -62,12 +62,12 @@
       {% for commune in communes %}
       <tr>
         <td>{{ commune.name }}</td>
-        <td>{{ commune.entitled }}</td>
+        <td>{{ '{:,}'.format(commune.entitled) }}</td>
         <td>{{ commune.turnout }}%</td>
         <td>?</td>
-        <td>{{ commune.lists[list_number - 1].direct_votes }}</td>
-        <td>{{ commune.lists[list_number - 1].additional_votes }}</td>
-        <td>{{ commune.lists[list_number - 1].list_votes }}</td>
+        <td>{{ '{:,}'.format(commune.get_list(list_number).direct_votes) }}</td>
+        <td>{{ '{:,}'.format(commune.lists[list_number].additional_votes) }}</td>
+        <td>{{ '{:,}'.format(commune.lists[list_number].list_votes) }}</td>
       </tr>
       {% endfor %}
     </table>
