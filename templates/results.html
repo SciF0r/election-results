@@ -87,7 +87,7 @@
       var data = {
         labels: [
         {% for candidate in candidates %}
-        '{{ candidate[0] }}',
+        '{{ candidate[0]|e }}',
         {% endfor %}
         ],
         datasets: [
@@ -99,7 +99,7 @@
             highlightStroke: 'rgba(249, 178, 0, 1)',
             data: [
             {% for candidate in candidates %}
-              {{ candidate[1].replace('\'', '\\\'')|e }},
+              {{ candidate[1] }},
             {% endfor %}
             ],
           },
