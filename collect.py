@@ -39,6 +39,7 @@ vote_results = {
 }
 list_results = {}
 candidate_results = {}
+lists = {}
 
 
 class List(object):
@@ -57,18 +58,24 @@ class Commune(object):
     """Holds the results for a commune"""
 
     def __init__(self, name, path):
-        self.name             = name
-        self.path             = path
-        self.total_votes      = 0
-        self.entitled         = 0
-        self.voted            = 0
-        self.empty            = 0
-        self.invalid          = 0
-        self.valid            = 0
-        self.turnout          = 0.0
-        self.lists            = {}
-        self._in_header       = True
-        self._current_list    = None
+        self.name          = name
+        self.path          = path
+        self.entitled      = 0
+        self.voted         = 0
+        self.empty         = 0
+        self.invalid       = 0
+        self.valid         = 0
+        self.all_votes     = 0
+        self.turnout       = 0.0
+        self.lists         = {}
+        self._in_header    = True
+        self._current_list = None
+
+    def get_votes_relative(self, list_number):
+        return round(
+            100 * self.lists[list_number].list_votes / self.all_votes,
+            2
+        )
 
     def read_header_row(self, row):
         """Handles a row in header context"""
@@ -81,8 +88,7 @@ class Commune(object):
         elif row[0] == STR['invalid']:
             self.invalid = get_csv_int(row[1])
         elif row[0] == STR['valid']:
-            valid_votes = get_csv_int(row[1])
-            self.valid = valid_votes
+            self.valid = get_csv_int(row[1])
         elif row[0] == STR['all_votes']:
             self.all_votes = get_csv_int(row[2])
             global vote_results
@@ -109,6 +115,7 @@ class Commune(object):
             list_number = self._current_list.number
             if list_number not in list_results.keys():
                 list_results[list_number] = 0
+                lists[list_number] = self._current_list.name
             list_results[list_number] += list_votes
         elif len(row) == 9 and row[1] != 'Name' and row[1] != 'Nom':
             try:
@@ -226,7 +233,12 @@ def write_results_html(election):
             candidates=election.candidates_sorted(list_number),
             list_results=election.list_results(list_number),
             vote_results=vote_results,
-            list_number=list_number
+            list_number=list_number,
+            lists=lists,
+            ordered_lists=sorted(
+                lists.items(),
+                key=lambda x: x[0]
+            )
         ).dump('output/{}.html'.format(list_number))
 
 

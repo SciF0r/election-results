@@ -11,11 +11,18 @@
     <script src="js/Chart.min.js"></script>
   </head>
   <body>
+    <div style="text-align: right">
+      <select id="list_id" onchange="goToList()">
+        {% for list in ordered_lists %}
+        <option value="{{ list[0] }}"{% if list_number == list[0] %} selected{% endif %}>{{ list[0] }}: {{ list[1]|e }}</option>
+        {% endfor %}
+      </select>
+    </div>
     <div class="container">
       <div class="row">
         <div class="column">
-          <h3>Aktuelle Wahlresultate (alle 10 Minuten)</h3>
-          <p>Live mitverfolgen, wie die [PARTEI EINFÜGEN] bei den Nationalratswahlen 2015 abschneiden.</p>
+          <h3>Aktuelle Wahlresultate: Liste {{ list_number }} - {{ lists[list_number]|e }}</h3>
+          <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Update alle 10 Minuten.</p>
           <table>
             <tbody>
               <tr>
@@ -23,7 +30,7 @@
                   Stimmen gesamt:
                 </th>
                 <td>
-                  {{ all_votes }}
+                  {{ '{:,}'.format(vote_results['all_votes']) }}
                 </td>
               </tr>
               <tr>
@@ -46,7 +53,7 @@
       <div class="row">
       </div>
     </div>
-    <table class="u-full-width">
+    <table id="communes" class="u-full-width">
       <thead>
         <tr>
           <th>Gemeinde</th>
@@ -61,17 +68,21 @@
       <tbody>
       {% for commune in communes %}
       <tr>
-        <td>{{ commune.name }}</td>
+        <td>{{ commune.name|e }}</td>
         <td>{{ '{:,}'.format(commune.entitled) }}</td>
         <td>{{ commune.turnout }}%</td>
-        <td>?</td>
+        <td>{{ '{:,}'.format(commune.all_votes) }}</td>
         <td>{{ '{:,}'.format(commune.get_list(list_number).direct_votes) }}</td>
         <td>{{ '{:,}'.format(commune.lists[list_number].additional_votes) }}</td>
-        <td>{{ '{:,}'.format(commune.lists[list_number].list_votes) }}</td>
+        <td>{{ '{:,}'.format(commune.lists[list_number].list_votes) }} ({{ commune.get_votes_relative(list_number) }}%)</td>
       </tr>
       {% endfor %}
     </table>
     <script>
+      function goToList() {
+        var select = document.getElementById('list_id')
+        location.href = select.value + '.html'
+      }
       var ctx = document.getElementById('candidates').getContext('2d')
       var data = {
         labels: [
@@ -88,7 +99,7 @@
             highlightStroke: 'rgba(195, 104, 0, 1)',
             data: [
             {% for candidate in candidates %}
-              {{ candidate[1] }},
+              {{ candidate[1]|e }},
             {% endfor %}
             ],
           },

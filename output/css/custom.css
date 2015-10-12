@@ -9,7 +9,7 @@ html {
   margin: 50px;
 }
 
-tr:nth-child(even) {
+tr#communes:nth-child(even) {
   background-color: #eeeeee;
 }
 
