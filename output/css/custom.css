@@ -8,3 +8,11 @@
 html {
   margin: 50px;
 }
+
+tr:nth-child(even) {
+  background-color: #eeeeee;
+}
+
+tr:hover {
+  background-color: rgba(195, 104, 0, 0.25);
+}
