@@ -22,12 +22,12 @@
       <div class="row">
         <div class="column">
           <h3>Aktuelle Wahlresultate: Liste {{ list_number }} - {{ lists[list_number]|e }}</h3>
-          <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Update alle 10 Minuten. By <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a></p>
+          <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Update alle 10 Minuten. By <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a>.</p>
           <table>
             <tbody>
               <tr>
                 <th>
-                  Stimmen gesamt:
+                  Stimmen total:
                 </th>
                 <td>
                   {{ '{:,}'.format(vote_results['all_votes']) }}
@@ -99,7 +99,7 @@
             highlightStroke: 'rgba(249, 178, 0, 1)',
             data: [
             {% for candidate in candidates %}
-              {{ candidate[1]|e }},
+              {{ candidate[1].replace('\'', '\\\'')|e }},
             {% endfor %}
             ],
           },
