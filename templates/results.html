@@ -15,10 +15,30 @@
       <div class="row">
         <div class="column">
           <h3>Aktuelle Wahlresultate (alle 10 Minuten)</h3>
-          <p>Live mitverfolgen, wie die Berner Piraten bei den Nationalratswahlen 2015 abschneiden.</p>
-          <p>Stimmen gesamt: {{ votes_all }}</p>
-          <p>Stimmen für die Piraten: <b>{{ votes_pirates }} ({{ votes_pirates_relative }}%)</b></p>
+          <p>Live mitverfolgen, wie die [PARTEI EINFÜGEN] bei den Nationalratswahlen 2015 abschneiden.</p>
+          <table>
+            <tbody>
+              <tr>
+                <th>
+                  Stimmen gesamt:
+                </th>
+                <td>
+                  {{ all_votes }}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  Stimmen Liste:
+                </th>
+                <td>
+                  {{ results['absolute'] }} ({{ results['relative'] }}%)
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
+      <div class="row">
         <div class="column" style="margin-top: 50px">
           <canvas id="candidates" class="u-full-width"></canvas>
         </div>
@@ -31,11 +51,8 @@
         <tr>
           <th>Gemeinde</th>
           <th>Wahlberechtigte</th>
-          <th>Stimmzettel</th>
-          <th>Leer</th>
-          <th>Ungültig</th>
-          <th>Gültig</th>
           <th>Wahlbeteiligung</th>
+          <th>Stimmen total</th>
           <th>Kandidatenstimmen</th>
           <th>Zusatzstimmen</th>
           <th>Parteistimmen</th>
@@ -46,14 +63,11 @@
       <tr>
         <td>{{ commune.name }}</td>
         <td>{{ commune.entitled }}</td>
-        <td>{{ commune.voted }}</td>
-        <td>{{ commune.empty }}</td>
-        <td>{{ commune.invalid }}</td>
-        <td>{{ commune.valid }}</td>
-        <td>{{ commune.turnout}}%</td>
-        <td>{{ commune.direct_votes }}</td>
-        <td>{{ commune.additional_votes }}</td>
-        <td>{{ commune.absolute_votes }} ({{ commune.relative_votes }}%)</td>
+        <td>{{ commune.turnout }}%</td>
+        <td>?</td>
+        <td>{{ commune.lists[list_number - 1].direct_votes }}</td>
+        <td>{{ commune.lists[list_number - 1].additional_votes }}</td>
+        <td>{{ commune.lists[list_number - 1].list_votes }}</td>
       </tr>
       {% endfor %}
     </table>
@@ -62,7 +76,7 @@
       var data = {
         labels: [
         {% for candidate in candidates %}
-          '{{ candidate[0] }}',
+        '{{ candidate[0] }}',
         {% endfor %}
         ],
         datasets: [
