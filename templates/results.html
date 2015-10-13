@@ -29,7 +29,7 @@
                   Stimmen total:
                 </th>
                 <td>
-                  {{ '{:,}'.format(vote_results['all_votes']) }}
+                  {{ '{:,}'.format(vote_results['all_votes']).replace(',', '\'') }}
                 </td>
               </tr>
               <tr>
@@ -37,7 +37,7 @@
                   Stimmen Liste:
                 </th>
                 <td>
-                  {{ '{:,}'.format(list_results['absolute']) }} ({{ list_results['relative'] }}%)
+                  {{ '{:,}'.format(list_results['absolute']).replace(',', '\'') }} ({{ list_results['relative'] }}%)
                 </td>
               </tr>
             </tbody>
@@ -68,12 +68,12 @@
       {% for commune in communes %}
       <tr>
         <td>{{ commune.name|e }}</td>
-        <td>{{ '{:,}'.format(commune.entitled) }}</td>
+        <td>{{ '{:,}'.format(commune.entitled).replace(',', '\'') }}</td>
         <td>{{ commune.turnout }}%</td>
-        <td>{{ '{:,}'.format(commune.all_votes) }}</td>
-        <td>{{ '{:,}'.format(commune.get_list(list_number).direct_votes) }}</td>
-        <td>{{ '{:,}'.format(commune.lists[list_number].additional_votes) }}</td>
-        <td>{{ '{:,}'.format(commune.lists[list_number].list_votes) }} ({{ commune.get_votes_relative(list_number) }}%)</td>
+        <td>{{ '{:,}'.format(commune.all_votes).replace(',', '\'') }}</td>
+        <td>{{ '{:,}'.format(commune.get_list(list_number).direct_votes).replace(',', '\'') }}</td>
+        <td>{{ '{:,}'.format(commune.lists[list_number].additional_votes).replace(',', '\'') }}</td>
+        <td>{{ '{:,}'.format(commune.lists[list_number].list_votes).replace(',', '\'') }} ({{ commune.get_votes_relative(list_number) }}%)</td>
       </tr>
       {% endfor %}
     </table>
