@@ -9,10 +9,10 @@ html {
   margin: 50px;
 }
 
-tr#communes:nth-child(even) {
+#communes tr:nth-child(even) {
   background-color: #eeeeee;
 }
 
-tr:hover {
+#communes tr:hover {
   background-color: rgba(249, 178, 0, 0.25);
 }
