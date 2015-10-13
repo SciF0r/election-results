@@ -198,6 +198,7 @@ class Election(object):
                 self.communes.append(commune_object)
             except RuntimeError as e:
                 print(e)
+            return
 
     def candidates_sorted(self, list_number):
         list_ = candidate_results[list_number]

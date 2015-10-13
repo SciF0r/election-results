@@ -6,12 +6,15 @@
     <meta name="author" content="Denis Simonet">
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/skeleton.css">
+    <link rel="stylesheet" href="css/datatables.min.css">
     <link rel="stylesheet" href="css/custom.css">
     <script src="js/Chart.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/datatables.min.js"></script>
   </head>
   <body>
     <div style="text-align: right">
-      <select id="list_id" onchange="goToList()">
+      <select id="list_id">
         {% for list in ordered_lists %}
         <option value="{{ list[0] }}"{% if list_number == list[0] %} selected{% endif %}>{{ list[0] }}: {{ list[1]|e }}</option>
         {% endfor %}
@@ -61,9 +64,8 @@
           <th>Wahlberechtigte</th>
           <th>Wahlbeteiligung</th>
           <th>Stimmen total</th>
-          <th>Kandidatenstimmen</th>
-          <th>Zusatzstimmen</th>
-          <th>Parteistimmen</th>
+          <th>Parteistimmen abs.</th>
+          <th>Parteistimmen rel.</th>
         </tr>
       </thead>
       <tbody>
@@ -73,17 +75,16 @@
         <td>{{ '{:,}'.format(commune.entitled).replace(',', '\'') }}</td>
         <td>{{ commune.turnout }}%</td>
         <td>{{ '{:,}'.format(commune.all_votes).replace(',', '\'') }}</td>
-        <td>{{ '{:,}'.format(commune.get_list(list_number).direct_votes).replace(',', '\'') }}</td>
-        <td>{{ '{:,}'.format(commune.lists[list_number].additional_votes).replace(',', '\'') }}</td>
-        <td>{{ '{:,}'.format(commune.lists[list_number].list_votes).replace(',', '\'') }} ({{ commune.get_votes_relative(list_number) }}%)</td>
+        <td>{{ '{:,}'.format(commune.lists[list_number].list_votes).replace(',', '\'') }}</td>
+        <td>{{ commune.get_votes_relative(list_number) }}%</td>
       </tr>
       {% endfor %}
     </table>
     <script>
-      function goToList() {
-        var select = document.getElementById('list_id')
-        location.href = select.value + '.html'
-      }
+      $('#list_id').change(function() {
+        location.href = this.value + '.html'
+      })
+      $('#communes').DataTable()
       var ctx = document.getElementById('candidates').getContext('2d')
       var data = {
         labels: [
