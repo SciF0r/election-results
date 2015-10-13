@@ -28,7 +28,17 @@
           <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Update alle 10 Minuten. By <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a>.</p>
           <p><small>Disclaimer: Diese Seite verlässt sich auf die Daten von der Staatskanzlei des Kantons Bern. Es ist weder garantiert, dass diese Daten jederzeit korrekt sind, noch dass die Berechnungen auf dieser Seite stimmen.</small></p>
           <table>
+            <thead>
+            </thead>
             <tbody>
+              <tr>
+                <th>
+                  Stimmen Liste:
+                </th>
+                <td>
+                  {{ '{:,}'.format(list_results['absolute']).replace(',', '\'') }} ({{ list_results['relative'] }}%)
+                </td>
+              </tr>
               <tr>
                 <th>
                   Stimmen total:
@@ -39,10 +49,34 @@
               </tr>
               <tr>
                 <th>
-                  Stimmen Liste:
+                  Stimmberechtigte:
                 </th>
                 <td>
-                  {{ '{:,}'.format(list_results['absolute']).replace(',', '\'') }} ({{ list_results['relative'] }}%)
+                  {{ '{:,}'.format(vote_results['entitled']).replace(',', '\'') }}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  Beteiligung:
+                </th>
+                <td>
+                  {{ '{:,}'.format(vote_results['voted']).replace(',', '\'') }}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  Gültige Zettel:
+                </th>
+                <td>
+                  {{ '{:,}'.format(vote_results['valid']).replace(',', '\'') }}
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  Ungültige Zettel:
+                </th>
+                <td>
+                  {{ '{:,}'.format(vote_results['invalid']).replace(',', '\'') }}
                 </td>
               </tr>
             </tbody>
@@ -63,6 +97,7 @@
           <th>Gemeinde</th>
           <th>Wahlberechtigte</th>
           <th>Wahlbeteiligung</th>
+          <th>Ungültig</th>
           <th>Stimmen total</th>
           <th>Parteistimmen abs.</th>
           <th>Parteistimmen rel.</th>
@@ -74,6 +109,7 @@
         <td>{{ commune.name|e }}</td>
         <td>{{ '{:,}'.format(commune.entitled).replace(',', '\'') }}</td>
         <td>{{ commune.turnout }}%</td>
+        <td>{{ commune.get_invalid_relative() }}%</td>
         <td>{{ '{:,}'.format(commune.all_votes).replace(',', '\'') }}</td>
         <td>{{ '{:,}'.format(commune.lists[list_number].list_votes).replace(',', '\'') }}</td>
         <td>{{ commune.get_votes_relative(list_number) }}%</td>

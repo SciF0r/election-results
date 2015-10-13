@@ -36,6 +36,11 @@ STR = {
 
 vote_results = {
     'all_votes': 0,
+    'entitled': 0,
+    'voted': 0,
+    'empty': 0,
+    'invalid': 0,
+    'valid': 0,
 }
 list_results = {}
 candidate_results = {}
@@ -79,19 +84,24 @@ class Commune(object):
 
     def read_header_row(self, row):
         """Handles a row in header context"""
+        global vote_results
         if row[0] == STR['entitled']:
             self.entitled = get_csv_int(row[1])
+            vote_results['entitled'] += self.entitled
         elif row[0] == STR['voted']:
             self.voted = get_csv_int(row[1])
+            vote_results['voted'] += self.voted
         elif row[0] == STR['empty']:
             self.empty = get_csv_int(row[1])
+            vote_results['empty'] += self.empty
         elif row[0] == STR['invalid']:
             self.invalid = get_csv_int(row[1])
+            vote_results['invalid'] += self.invalid
         elif row[0] == STR['valid']:
             self.valid = get_csv_int(row[1])
+            vote_results['valid'] += self.valid
         elif row[0] == STR['all_votes']:
             self.all_votes = get_csv_int(row[2])
-            global vote_results
             vote_results['all_votes'] += self.all_votes
         elif row[0] == STR['turnout']:
             self.turnout = get_csv_float(row[1])
@@ -134,6 +144,9 @@ class Commune(object):
                 number,
                 self.name
             ))
+
+    def get_invalid_relative(self):
+        return round(100 * self.invalid / self.voted, 2)
 
     def _add_candidate(self, first_name, last_name, votes):
         global candidate_results
