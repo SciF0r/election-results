@@ -20,4 +20,7 @@ html {
 #candidates {
   min-height: 400px;
 }
+
+.dt-buttons {
+  margin-left: 10px;
 }
