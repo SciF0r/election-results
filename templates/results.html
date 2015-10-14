@@ -7,10 +7,13 @@
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/skeleton.css">
     <link rel="stylesheet" href="css/datatables.min.css">
+    <link rel="stylesheet" href="css/Buttons-1.0.3/css/buttons.dataTables.min.css">
     <link rel="stylesheet" href="css/custom.css">
     <script src="js/Chart.min.js"></script>
     <script src="js/jquery.min.js"></script>
     <script src="js/datatables.min.js"></script>
+    <script src="js/dataTables.buttons.min.js"></script>
+    <script src="js/buttons.html5.min.js"></script>
   </head>
   <body>
     <div style="text-align: right">
@@ -60,7 +63,7 @@
                   Beteiligung:
                 </th>
                 <td>
-                  {{ '{:,}'.format(vote_results['voted']).replace(',', '\'') }}
+                  {{ '{:,}'.format(vote_results['voted']).replace(',', '\'') }} ({{ election.turnout_relative() }} %)
                 </td>
               </tr>
               <tr>
@@ -76,7 +79,7 @@
                   Ungültige Zettel:
                 </th>
                 <td>
-                  {{ '{:,}'.format(vote_results['invalid']).replace(',', '\'') }}
+                  {{ '{:,}'.format(vote_results['invalid']).replace(',', '\'') }} ({{ election.invalid_relative() }}%)
                 </td>
               </tr>
             </tbody>
@@ -104,7 +107,7 @@
         </tr>
       </thead>
       <tbody>
-      {% for commune in communes %}
+      {% for commune in election.communes %}
       <tr>
         <td>{{ commune.name|e }}</td>
         <td>{{ '{:,}'.format(commune.entitled).replace(',', '\'') }}</td>
@@ -120,7 +123,11 @@
       $('#list_id').change(function() {
         location.href = this.value + '.html'
       })
-      $('#communes').DataTable()
+      $('#communes').DataTable({
+        dom: 'lBfrtip',
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        buttons: ['csv'],
+      })
       var ctx = document.getElementById('candidates').getContext('2d')
       var data = {
         labels: [

@@ -84,7 +84,6 @@ class Commune(object):
 
     def read_header_row(self, row):
         """Handles a row in header context"""
-        global vote_results
         if row[0] == STR['entitled']:
             self.entitled = get_csv_int(row[1])
             vote_results['entitled'] += self.entitled
@@ -121,7 +120,6 @@ class Commune(object):
         elif row[0] == STR['list_votes']:
             list_votes = get_csv_int(row[1])
             self._current_list.list_votes = list_votes
-            global list_results
             list_number = self._current_list.number
             if list_number not in list_results.keys():
                 list_results[list_number] = 0
@@ -149,7 +147,6 @@ class Commune(object):
         return round(100 * self.invalid / self.voted, 2)
 
     def _add_candidate(self, first_name, last_name, votes):
-        global candidate_results
         self._current_list.candidates.append({
             'first_name': first_name,
             'last_name': last_name,
@@ -227,6 +224,12 @@ class Election(object):
             'relative': round(100 * list_votes / vote_results['all_votes'], 2)
         }
 
+    def turnout_relative(self):
+        return round(100 * vote_results['voted'] / vote_results['entitled'], 2)
+
+    def invalid_relative(self):
+        return round(100 * vote_results['invalid'] / vote_results['voted'], 2)
+
 
 def get_html(url):
     """Returns a BeautifulSoup object of the given url"""
@@ -242,7 +245,7 @@ def write_results_html(election):
     template = env.get_template('results.html')
     for list_number in list_results.keys():
         template.stream(
-            communes=election.communes,
+            election=election,
             candidates=election.candidates_sorted(list_number),
             list_results=election.list_results(list_number),
             vote_results=vote_results,
