@@ -77,6 +77,7 @@ class Commune(object):
         self._current_list = None
 
     def get_votes_relative(self, list_number):
+        """Returns the percentage of list votes received"""
         return round(
             100 * self.lists[list_number].list_votes / self.all_votes,
             2
@@ -144,9 +145,11 @@ class Commune(object):
             ))
 
     def get_invalid_relative(self):
+        """Returns the percentage of invalid votes received"""
         return round(100 * self.invalid / self.voted, 2)
 
     def _add_candidate(self, first_name, last_name, votes):
+        """Add a new candidate to the Commune"""
         self._current_list.candidates.append({
             'first_name': first_name,
             'last_name': last_name,
@@ -210,6 +213,7 @@ class Election(object):
                 print(e)
 
     def candidates_sorted(self, list_number):
+        """Return the candidates of a list, sorted by votes received"""
         list_ = candidate_results[list_number]
         return sorted(
             list_.items(),
@@ -218,6 +222,7 @@ class Election(object):
         )
 
     def list_results(self, list_number):
+        """Returns the absolute and relative votes received in the whole canton"""
         list_votes = list_results[list_number]
         return {
             'absolute': list_votes,
@@ -225,9 +230,11 @@ class Election(object):
         }
 
     def turnout_relative(self):
+        """Returns the turnout percentage of these elections"""
         return round(100 * vote_results['voted'] / vote_results['entitled'], 2)
 
     def invalid_relative(self):
+        """Returns the percentage of invalid votes in the whole canton"""
         return round(100 * vote_results['invalid'] / vote_results['voted'], 2)
 
 
