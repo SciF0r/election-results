@@ -4,10 +4,10 @@ Election Results
 Disclaimer
 ----------
 
-This is Quick&Dirty hack to show the election results of the national elections
-in the Canton of Bern. Feel free to use this code or send pull requests. In
-order to extend this project to more cantons, some refactoring is required. The
-HTML part would need some improvements, too.
+This is a Quick&Dirty hack to show the election results of the national
+elections in the Canton of Bern. Feel free to use this code or send pull
+requests. In order to extend this project to more cantons, some refactoring is
+required. The HTML part would need some improvements, too.
 
 Usage
 -----
