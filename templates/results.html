@@ -30,6 +30,10 @@
           <h4>Achtung: Dies zeigt für Testzwecke das Jahr 2011, am Sonntag wird es dann mit aktuellen Daten gespiesen.</h4>
           <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Update alle 10 Minuten. By <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a>.</p>
           <p><small>Disclaimer: Diese Seite verlässt sich auf die Daten von der Staatskanzlei des Kantons Bern. Es ist weder garantiert, dass diese Daten jederzeit korrekt sind, noch dass die Berechnungen auf dieser Seite stimmen.</small></p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="six columns">
           <table>
             <thead>
             </thead>
@@ -92,13 +96,15 @@
             </tbody>
           </table>
         </div>
+        <div class="six columns">
+          <h4>Aktueller Stand:</h4>
+          <h1>{{ list_results['relative'] }}%</h1>
+        </div>
       </div>
       <div class="row">
         <div class="column" style="margin-top: 50px">
           <canvas id="candidates" class="u-full-width"></canvas>
         </div>
-      </div>
-      <div class="row">
       </div>
     </div>
     <table id="communes" class="u-full-width">
