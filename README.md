@@ -19,3 +19,15 @@ Usage
 
 There will be one html file for each list in the directory output (1.html,
 2.html, ...).
+
+Cache
+-----
+
+The CSV files are stored in the directory cache/. To ignore the cache (i.e.
+force a new download of every file) the environment variable IGNORE\_CACHE needs
+to be set:
+
+- IGNORE\_CACHE=1 ./collect.py
+
+The checksums of each download are stored in meta files with the ending
+.sha256, also in the directory cache/.
