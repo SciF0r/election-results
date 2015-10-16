@@ -77,6 +77,7 @@ class Commune(object):
         self.all_votes     = 0
         self.turnout       = 0.0
         self.lists         = {}
+        self._commune_id   = 0
         self._in_header    = True
         self._current_list = None
 
@@ -167,16 +168,26 @@ class Commune(object):
             candidate_results[list_number][full_name] = 0
         candidate_results[list_number][full_name] += votes
 
+    def get_commune_id(self):
+        if self._commune_id == 0:
+            match = COMMUNE_PATTERN.search(self.path)
+            if not match:
+                print('No commune id found for {}'.format(self.name))
+                return
+            self._commune_id = int(match.group(1))
+        return self._commune_id
+
+    def get_csv_link(self):
+        return '{}{}'.format(
+            URL['base'],
+            URL['csv'].format(self.get_commune_id())
+        )
+
     def fill(self):
         """Fills Commune object with the results"""
-        match = COMMUNE_PATTERN.search(self.path)
-        if not match:
-            print('No commune id found for {}'.format(self.name))
-            return
-        commune_id = match.group(1)
-        csv_path = 'cache/{}.csv'.format(commune_id)
+        csv_path = 'cache/{}.csv'.format(self.get_commune_id())
         if ignore_cache or not os.path.exists(csv_path):
-            self.download_csv(commune_id, csv_path)
+            self.download_csv(self.get_commune_id(), csv_path)
         with open(csv_path, 'r') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=';')
             for row in csv_reader:
@@ -188,14 +199,10 @@ class Commune(object):
     def download_csv(self, commune_id, path):
         """Download the corresponding CSV file to given path"""
         print('d', end='', flush=True)
-        csv_link = '{}{}'.format(
-            URL['base'],
-            URL['csv'].format(commune_id)
-        )
         try:
-            csv_data = req.urlopen(csv_link).read().decode('latin1', 'ignore')
+            csv_data = req.urlopen(self.get_csv_link()).read()
             with open(path, 'w') as csv_file:
-                csv_file.write(csv_data)
+                csv_file.write(csv_data.decode('latin1', 'ignore'))
             with open('{}.meta'.format(path), 'a') as meta_file:
                 meta_file.write('{}: {}\n'.format(
                     datetime.datetime.now(),
