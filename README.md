@@ -30,4 +30,4 @@ to be set:
 - IGNORE\_CACHE=1 ./collect.py
 
 The checksums of each download are stored in meta files with the ending
-.sha256, also in the directory cache/.
+.meta, also in the directory cache/.
