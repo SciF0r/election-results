@@ -6,8 +6,11 @@
 
 import bs4
 import csv
+import datetime
+import hashlib
 import io
 import jinja2
+import os
 import urllib.request as req
 import urllib.error   as url_error
 import re
@@ -45,6 +48,7 @@ vote_results = {
 list_results = {}
 candidate_results = {}
 lists = {}
+ignore_cache = 'IGNORE_CACHE' in os.environ.keys()
 
 
 class List(object):
@@ -169,23 +173,40 @@ class Commune(object):
         if not match:
             print('No commune id found for {}'.format(self.name))
             return
+        commune_id = match.group(1)
+        csv_path = 'cache/{}.csv'.format(commune_id)
+        if ignore_cache or not os.path.exists(csv_path):
+            self.download_csv(commune_id, csv_path)
+        with open(csv_path, 'r') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=';')
+            for row in csv_reader:
+                if self._in_header:
+                    self.read_header_row(row)
+                else:
+                    self.read_party_row(row)
+
+    def download_csv(self, commune_id, path):
+        """Download the corresponding CSV file to given path"""
+        print('d', end='', flush=True)
         csv_link = '{}{}'.format(
             URL['base'],
-            URL['csv'].format(match.group(1))
+            URL['csv'].format(commune_id)
         )
-
         try:
             csv_data = req.urlopen(csv_link).read().decode('latin1', 'ignore')
+            with open(path, 'w') as csv_file:
+                csv_file.write(csv_data)
+            with open('{}.meta'.format(path), 'a') as meta_file:
+                meta_file.write('{}: {}\n'.format(
+                    datetime.datetime.now(),
+                    hashlib.sha256(
+                        open(path, 'rb').read()
+                    ).hexdigest()
+                ))
         except url_error.HTTPError as e:
             raise RuntimeError(
-                'Could not open CSV file for {}: {}'.format(self.name, e)
+                'Could not download CSV file for {}: {}'.format(self.name, e)
             )
-        csv_reader = csv.reader(io.StringIO(csv_data), delimiter=';')
-        for row in csv_reader:
-            if self._in_header:
-                self.read_header_row(row)
-            else:
-                self.read_party_row(row)
 
 
 class Election(object):
