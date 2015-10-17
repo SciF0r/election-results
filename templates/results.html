@@ -16,17 +16,20 @@
     <script src="js/buttons.html5.min.js"></script>
   </head>
   <body>
-    <div style="text-align: right">
-      <select id="list_id">
-        {% for list in ordered_lists %}
-        <option value="{{ list[0] }}"{% if list_number == list[0] %} selected{% endif %}>{{ list[0] }}: {{ list[1]['name']|e }}</option>
-        {% endfor %}
-      </select>
-    </div>
     <div class="container">
+      <img src="images/because_we_can_logo.png" width="200px" class="u-pull-right">
+      <h3>Bin ich drin? #wahlCH15 #bern</h3>
+      <div class="row">
+        <div class="six columns">
+          <select id="list_id">
+            {% for list in ordered_lists %}
+            <option value="{{ list[0] }}"{% if list_number == list[0] %} selected{% endif %}>Liste {{ list[0] }}: {{ list[1]['name']|e }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
       <div class="row">
         <div class="column">
-          <h3>Aktuelle Wahlresultate: Liste {{ list_number }} - {{ lists[list_number]['name']|e }}</h3>
           <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Eine Dienstleistung der <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a> (Kontakt und Entwickler: Denis Simonet, +41 76 509 84 82). Finanzielle Unterstützung gerne an Konto 60-296921-7, IBAN CH27 0900 0000 6029 6921 7 (Piratenpartei Bern, 3000 Bern) oder per Bitcoin an 1BqApZ7PG3nu9V2nTvpgJZfbjDq9N48mQB. Danke!</p>
           <p><small>Disclaimer: Diese Seite verlässt sich auf die Daten der Staatskanzlei des Kantons Bern. Es wird nicht garantiert, dass diese korrekt sind oder unsere Berechnungen stimmen.</small></p>
         </div>
