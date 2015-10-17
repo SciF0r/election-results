@@ -2,7 +2,7 @@
 <html lang="de">
   <head>
     <meta charset="utf-8">
-    <title>Aktuelle Resultate für die {{ lists[list_number]|e }} - powered by Piratenpartei Bern</title>
+    <title>Aktuelle Resultate für die {{ lists[list_number]['name']|e }} - powered by Piratenpartei Bern</title>
     <meta name="author" content="Denis Simonet">
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/skeleton.css">
@@ -19,14 +19,14 @@
     <div style="text-align: right">
       <select id="list_id">
         {% for list in ordered_lists %}
-        <option value="{{ list[0] }}"{% if list_number == list[0] %} selected{% endif %}>{{ list[0] }}: {{ list[1]|e }}</option>
+        <option value="{{ list[0] }}"{% if list_number == list[0] %} selected{% endif %}>{{ list[0] }}: {{ list[1]['name']|e }}</option>
         {% endfor %}
       </select>
     </div>
     <div class="container">
       <div class="row">
         <div class="column">
-          <h3>Aktuelle Wahlresultate: Liste {{ list_number }} - {{ lists[list_number]|e }}</h3>
+          <h3>Aktuelle Wahlresultate: Liste {{ list_number }} - {{ lists[list_number]['name']|e }}</h3>
           <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Eine Dienstleistung der <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a> (Kontakt und Entwickler: Denis Simonet, +41 76 509 84 82). Finanzielle Unterstützung gerne an Konto 60-296921-7, IBAN: CH27 0900 0000 6029 6921 7 oder per Bitcoin an 1BqApZ7PG3nu9V2nTvpgJZfbjDq9N48mQB. Danke!</p>
           <p><small>Disclaimer: Diese Seite verlässt sich auf die Daten der Staatskanzlei des Kantons Bern. Es wird nicht garantiert, dass diese korrekt sind oder unsere Berechnungen stimmen.</small></p>
         </div>
@@ -68,13 +68,47 @@
           <h1>{{ list_results['relative'] }}%</h1>
         </div>
       </div>
-      <div class="row">
-        <div class="column" style="margin-top: 50px">
+      <div class="row" style="margin-top: 50px">
+        <div class="six columns">
+          <canvas id="lists" class="u-full-width"></canvas>
+        </div>
+        <div class="six columns">
+          <table id="lists_table" class="u-full-width">
+            <thead>
+              <tr>
+                <th>Liste</th>
+                <th>Listenkürzel</th>
+                <th>Stimmen</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for list in election.lists_ordered() %}
+            {% if list[0] == list_number or election.list_results(list[0])['relative'] >= 1 %}
+              <tr>
+                <td>
+                  {{ list[0] }}
+                </td>
+                <td>
+                  {{ list[1]['short']|e }}
+                </td>
+                <td>
+                  {{ '{:,}'.format(election.list_results(list[0])['absolute']).replace(',', '\'') }}
+                  ({{ election.list_results(list[0])['relative'] }}%)
+                </td>
+              </tr>
+            {% endif %}
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 50px">
+        <div class="column">
           <canvas id="candidates" class="u-full-width"></canvas>
         </div>
       </div>
     </div>
-    <table id="communes" class="u-full-width">
+    <table id="communes" class="u-full-width" style="margin-top: 50px">
       <thead>
         <tr>
           <th>Gemeinde</th>
@@ -100,6 +134,51 @@
       {% endfor %}
     </table>
     <script>
+      colors = {
+        aqua: "#00ffff",
+        azure: "#f0ffff",
+        beige: "#f5f5dc",
+        black: "#000000",
+        blue: "#0000ff",
+        brown: "#a52a2a",
+        cyan: "#00ffff",
+        darkblue: "#00008b",
+        darkcyan: "#008b8b",
+        darkgrey: "#a9a9a9",
+        darkgreen: "#006400",
+        darkkhaki: "#bdb76b",
+        darkmagenta: "#8b008b",
+        darkolivegreen: "#556b2f",
+        darkorange: "#ff8c00",
+        darkorchid: "#9932cc",
+        darkred: "#8b0000",
+        darksalmon: "#e9967a",
+        darkviolet: "#9400d3",
+        fuchsia: "#ff00ff",
+        gold: "#ffd700",
+        green: "#008000",
+        indigo: "#4b0082",
+        khaki: "#f0e68c",
+        lightblue: "#add8e6",
+        lightcyan: "#e0ffff",
+        lightgreen: "#90ee90",
+        lightgrey: "#d3d3d3",
+        lightpink: "#ffb6c1",
+        lightyellow: "#ffffe0",
+        lime: "#00ff00",
+        magenta: "#ff00ff",
+        maroon: "#800000",
+        navy: "#000080",
+        olive: "#808000",
+        orange: "#ffa500",
+        pink: "#ffc0cb",
+        purple: "#800080",
+        violet: "#800080",
+        red: "#ff0000",
+        silver: "#c0c0c0",
+        white: "#ffffff",
+        yellow: "#ffff00"
+      }
       $('#list_id').change(function() {
         location.href = this.value + '.html'
       })
@@ -108,11 +187,11 @@
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         buttons: ['csv'],
       })
-      var ctx = document.getElementById('candidates').getContext('2d')
+      var ctx = $('#candidates')[0].getContext('2d')
       var data = {
         labels: [
         {% for candidate in candidates %}
-        '{{ candidate[0]|e }}',
+          '{{ candidate[0]|e }}',
         {% endfor %}
         ],
         datasets: [
@@ -133,6 +212,21 @@
       var options = {
       }
       var candidates_chart = new Chart(ctx).Bar(data, options)
+      var ctx = $('#lists')[0].getContext('2d')
+      var data = [
+        {% for list in election.lists_ordered() %}
+        {% if list[0] == list_number or election.list_results(list[0])['relative'] >= 1 %}
+        {
+          value: {{ election.list_results(list[0])['absolute'] }},
+          color: colors[{{ list_number }}],
+          label: '{{ list[1]['short']|e }} ({{ election.list_results(list[0])['relative'] }}%)',
+        },
+        {% endif %}
+        {% endfor %}
+      ]
+      var options = {
+      }
+      var candidates_chart = new Chart(ctx).Doughnut(data, options)
     </script>
   </body>
 </html>

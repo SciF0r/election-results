@@ -55,8 +55,9 @@ class List(object):
     """Holds the results for a list"""
 
     def __init__(self, number, name):
-        self.name = name
-        self.number = number
+        self.name             = name
+        self.number           = number
+        self.short            = ''
         self.direct_votes     = 0
         self.additional_votes = 0
         self.list_votes       = 0
@@ -119,6 +120,8 @@ class Commune(object):
             list_name   = row[2]
             self._current_list = List(list_number, list_name)
             self.lists[list_number] = self._current_list
+        elif row[0] == STR['short']:
+            self._current_list.short = row[1]
         elif row[0] == STR['direct_votes']:
             self._current_list.direct_votes = get_csv_int(row[1])
         elif row[0] == STR['additional_votes']:
@@ -129,7 +132,10 @@ class Commune(object):
             list_number = self._current_list.number
             if list_number not in list_results.keys():
                 list_results[list_number] = 0
-                lists[list_number] = self._current_list.name
+                lists[list_number] = {
+                    'name': self._current_list.name,
+                    'short': self._current_list.short,
+                }
             list_results[list_number] += list_votes
         elif len(row) == 9 and row[1] != 'Name' and row[1] != 'Nom':
             try:
@@ -256,6 +262,14 @@ class Election(object):
             'absolute': list_votes,
             'relative': round(100 * list_votes / vote_results['all_votes'], 2)
         }
+
+    def lists_ordered(self):
+        """Returns the list results ordered by votes"""
+        return sorted(
+            lists.items(),
+            key=lambda x: self.list_results(x[0])['absolute'],
+            reverse=True
+        )
 
     def turnout_relative(self):
         """Returns the turnout percentage of these elections"""

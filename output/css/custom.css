@@ -21,6 +21,10 @@ html {
   min-height: 400px;
 }
 
+#lists {
+  min-height: 400px;
+}
+
 .dt-buttons {
   margin-left: 10px;
 }
