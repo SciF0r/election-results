@@ -27,9 +27,8 @@
       <div class="row">
         <div class="column">
           <h3>Aktuelle Wahlresultate: Liste {{ list_number }} - {{ lists[list_number]|e }}</h3>
-          <h4>Achtung: Dies zeigt für Testzwecke das Jahr 2011, am Sonntag wird es dann mit aktuellen Daten gespiesen.</h4>
-          <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. By <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a>.</p>
-          <p><small>Disclaimer: Diese Seite verlässt sich auf die Daten von der Staatskanzlei des Kantons Bern. Es ist weder garantiert, dass diese Daten jederzeit korrekt sind, noch dass die Berechnungen auf dieser Seite stimmen.</small></p>
+          <p>Live mitverfolgen, wie die Nationalratswahlen 2015 im Kanton Bern verlaufen. Eine Dienstleistung der <a href="https://be.piratenpartei.ch" target="_blank">Piratenpartei Bern</a> (Kontakt und Entwickler: Denis Simonet, +41 76 509 84 82). Finanzielle Unterstützung gerne an Konto 60-296921-7, IBAN: CH27 0900 0000 6029 6921 7 oder per Bitcoin an 1BqApZ7PG3nu9V2nTvpgJZfbjDq9N48mQB. Danke!</p>
+          <p><small>Disclaimer: Diese Seite verlässt sich auf die Daten der Staatskanzlei des Kantons Bern. Es wird nicht garantiert, dass diese korrekt sind oder unsere Berechnungen stimmen.</small></p>
         </div>
       </div>
       <div class="row">
@@ -47,50 +46,18 @@
               </tr>
               <tr>
                 <th>
-                  Stimmen Liste:
+                  Listenstimmen:
                 </th>
                 <td>
-                  {{ '{:,}'.format(list_results['absolute']).replace(',', '\'') }} ({{ list_results['relative'] }}%)
+                  {{ '{:,}'.format(list_results['absolute']).replace(',', '\'') }} von {{ '{:,}'.format(vote_results['all_votes']).replace(',', '\'') }} ({{ list_results['relative'] }}%)
                 </td>
               </tr>
               <tr>
                 <th>
-                  Stimmen total:
+                  Wahlbeteiligung:
                 </th>
                 <td>
-                  {{ '{:,}'.format(vote_results['all_votes']).replace(',', '\'') }}
-                </td>
-              </tr>
-              <tr>
-                <th>
-                  Wahlberechtigte:
-                </th>
-                <td>
-                  {{ '{:,}'.format(vote_results['entitled']).replace(',', '\'') }}
-                </td>
-              </tr>
-              <tr>
-                <th>
-                  Beteiligung:
-                </th>
-                <td>
-                  {{ '{:,}'.format(vote_results['voted']).replace(',', '\'') }} ({{ election.turnout_relative() }} %)
-                </td>
-              </tr>
-              <tr>
-                <th>
-                  Gültige Zettel:
-                </th>
-                <td>
-                  {{ '{:,}'.format(vote_results['valid']).replace(',', '\'') }}
-                </td>
-              </tr>
-              <tr>
-                <th>
-                  Ungültige Zettel:
-                </th>
-                <td>
-                  {{ '{:,}'.format(vote_results['invalid']).replace(',', '\'') }} ({{ election.invalid_relative() }}%)
+                  {{ '{:,}'.format(vote_results['voted']).replace(',', '\'') }} von {{ '{:,}'.format(vote_results['entitled']).replace(',', '\'') }} ({{ election.turnout_relative() }} %), davon ungültig: {{ '{:,}'.format(vote_results['invalid']).replace(',', '\'') }} ({{ election.invalid_relative() }}%)
                 </td>
               </tr>
             </tbody>
@@ -114,9 +81,9 @@
           <th>Wahlberechtigte</th>
           <th>Wahlbeteiligung</th>
           <th>Ungültig</th>
-          <th>Stimmen total</th>
-          <th>Parteistimmen abs.</th>
-          <th>Parteistimmen rel.</th>
+          <th>Abgegebene Stimmen</th>
+          <th>Listenstimmen absolut</th>
+          <th>Listenstimmen relativ</th>
         </tr>
       </thead>
       <tbody>
