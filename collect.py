@@ -16,11 +16,11 @@ import urllib.error   as url_error
 import re
 
 URL = {
-    'base'     : 'http://www.wahlarchiv.sites.be.ch/wahlen2011/target/',
-    'overview' : 'GemeindenUebersichtAction.do@method=read&sprache=d.html',
+    'base'     : 'http://www.nawa.apps.be.ch/stat/nawastat/nawa/action/',
+    'overview' : 'GemeindenUebersichtActione1d4.html?method=read&sprache=d',
     'csv'      : 'pdfs/waehleranteileGemeinde{}.csv',
 }
-COMMUNE_PATTERN = re.compile(r'.*gem=(\d{3}).html')
+COMMUNE_PATTERN = re.compile(r'.*gem=(\d{3})')
 
 STR = {
     'entitled'         : 'Wahlberechtigte / Nombre d\'électeurs',
